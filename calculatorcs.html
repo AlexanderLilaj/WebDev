@@ -1,58 +1,251 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
-  
-    
-    
-  
+<html>
+  <head>
+    <title>Calculator</title>
+    <style>
+      .button {
+        width: 80px;
+        height: 40px;
+        background-color: #6969b3;
+        border: 0px;
+        color: #ffffffca;
+        border-radius: 6px;
+        box-shadow: 3px 5px 5px black;
+      }
 
-  
+      button:hover {
+        background-color: #98c1d9;
+      }
+
+      button:active {
+        box-shadow: 2px 4px 4px black;
+      }
+
+      .flexContainer {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        align-items: baseline;
+        width: 390px;
+        row-gap: 8px;
+      }
+
+      .displayContainer {
+        display: flex;
+        justify-content: flex-end;
+        width: 390px;
+      }
+
+      #display {
+        margin-right: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
     <h1>Calculator</h1>
     <div class="displayContainer">
-      <span></span>
+      <span id="display"></span>
     </div>
 
     <div class="flexContainer">
-      7
-      8
-      9
-      /
+      <button class="button number">7</button>
+      <button class="button number">8</button>
+      <button class="button number">9</button>
+      <button class="button operator">/</button>
 
-      4
-      5
-      6
-      *
+      <button class="button number">4</button>
+      <button class="button number">5</button>
+      <button class="button number">6</button>
+      <button class="button operator">*</button>
 
-      1
-      2
-      3
-      -
+      <button class="button number">1</button>
+      <button class="button number">2</button>
+      <button class="button number">3</button>
+      <button class="button operator">-</button>
 
-      0
-      .
-      =
-      +
+      <button class="button number">0</button>
+      <button class="button decimal">.</button>
+      <button class="button equals">=</button>
+      <button class="button operator">+</button>
 
-      (
-      )
+      <button class="button parenthesis">(</button>
+      <button class="button parenthesis">)</button>
     </div>
 
-    
-  
-<script type="module" src="https://s.brightspace.com/lib/bsi/2025.2.234/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
-						if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
-							document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
-								elm.setAttribute('style', 'display: block; height: 0.5rem;');
-							});
+    <script>
+      const numbersArr = Array.from(document.getElementsByClassName("number"));
+      const operatorsArr = Array.from(document.getElementsByClassName("operator"));
+      const parenthesisArr = Array.from(document.getElementsByClassName("parenthesis"));
+      const numberStrs = "0123456789".split("");
 
-							window.D2L.MathJax.loadMathJax({
-								outputScale: 1.5,
-								renderLatex: true,
-								enableMML3Support: false
-							});
-						}
-					});</script><script type="module" src="https://s.brightspace.com/lib/bsi/2025.2.234/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
-					document.querySelectorAll('.d2l-code').forEach(code => {
-						window.D2L.Prism.formatCodeElement(code);
-					});
-				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/2025.2.234/unbundled/embeds.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
-					window.D2L.EmbedRenderer.renderEmbeds(document.body);
-				});</script></body></html>
+      const data = {
+        displayString: "0",
+        appendStringNum: (newChar) => {
+          if (newChar === ".") {
+            //decimal + 0?
+          }
+
+          if (numberStrs.includes(newChar)) {
+            if (data.displayString === "0") {
+              data.displayString = "";
+            }
+            data.displayString += newChar;
+          }
+          data.updateDisplay();
+        },
+
+        appendStringOperator: (newChar) => {
+          if (numberStrs.includes(data.displayString.slice(-1)) || data.displayString.slice(-1) === ")") {
+            data.displayString += newChar;
+          }
+          data.updateDisplay();
+        },
+
+        appendStringParenthesis: (newChar) => {
+          if (newChar === ")") {
+            if (data.displayString.split("(").length <= data.displayString.split(")").length) {
+              //if there are not enough open parenthesis to add a closing parenthesis terminate early
+              return;
+            }
+            if (operatorsArr.map((operator) => operator.innerText).includes(data.displayString[data.displayString.length - 1])) {
+              //early termination for adding parenthesis after operator
+              return;
+            }
+          }
+          if (data.displayString === "0") {
+            data.displayString = "";
+            data.displayString += newChar;
+            return;
+          }
+
+          data.displayString += newChar;
+
+          data.updateDisplay();
+        },
+        updateDisplay: () => {
+          const display = document.getElementById("display");
+          display.innerText = data.displayString;
+        },
+      };
+
+      const display = document.getElementById("display");
+      display.innerText = data.displayString;
+
+      numbersArr.map((elem, i) => {
+        elem.addEventListener("click", (evt) => {
+          data.appendStringNum(elem.innerText);
+        });
+      });
+
+      operatorsArr.map((elem, i) => {
+        elem.addEventListener("click", (evt) => {
+          data.appendStringOperator(elem.innerText);
+        });
+      });
+
+      parenthesisArr.map((elem, i) => {
+        elem.addEventListener("click", (evt) => {
+          data.appendStringParenthesis(elem.innerText);
+        });
+      });
+
+      function infixToPostfix(infix) {
+        const precedence = {
+            '+': 1,
+            '-': 1,
+            '*': 2,
+            '/': 2,
+            '^': 3
+        };
+
+        const stack = [];
+        const output = [];
+        let numberBuffer = '';
+
+        for (let i = 0; i < infix.length; i++) {
+            const char = infix[i];
+
+            if (numberStrs.includes(char) || char === '.') {
+                numberBuffer += char;
+            } else {
+                if (numberBuffer !== '') {
+                    output.push(numberBuffer);
+                    numberBuffer = '';
+                }
+
+                if (char === '(') {
+                    stack.push(char);
+                } else if (char === ')') {
+                    while (stack.length > 0 && stack[stack.length - 1] !== '(') {
+                        output.push(stack.pop());
+                    }
+                    stack.pop(); // Remove '(' from stack
+                } else if (precedence[char]) {
+                    while (stack.length > 0 && precedence[stack[stack.length - 1]] >= precedence[char]) {
+                        output.push(stack.pop());
+                    }
+                    stack.push(char);
+                }
+            }
+        }
+
+        if (numberBuffer !== '') {
+            output.push(numberBuffer);
+        }
+
+        while (stack.length > 0) {
+            output.push(stack.pop());
+        }
+
+        return output;
+      }
+
+      function evaluatePostfix(postfix) {
+        const stack = [];
+
+        for (let i = 0; i < postfix.length; i++) {
+            const token = postfix[i];
+
+            if (numberStrs.includes(token[0]) || token[0] === '.') {
+                stack.push(parseFloat(token));
+            } else {
+                const operand2 = stack.pop();
+                const operand1 = stack.pop();
+
+                switch (token) {
+                    case '+':
+                        stack.push(operand1 + operand2);
+                        break;
+                    case '-':
+                        stack.push(operand1 - operand2);
+                        break;
+                    case '*':
+                        stack.push(operand1 * operand2);
+                        break;
+                    case '/':
+                        stack.push(operand1 / operand2);
+                        break;
+                    case '^':
+                        stack.push(Math.pow(operand1, operand2));
+                        break;
+                    default:
+                        throw new Error(`Unknown operator: ${token}`);
+                }
+            }
+        }
+
+        return stack.pop();
+      }
+
+      const equalsButton = document.querySelector(".equals");
+      equalsButton.addEventListener("click", () => {
+        const infixExpression = data.displayString;
+        const postfixExpression = infixToPostfix(infixExpression);
+        const result = evaluatePostfix(postfixExpression);
+        data.displayString = result.toString();
+        data.updateDisplay();
+      });
+    </script>
+  </body>
+</html>
