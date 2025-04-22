@@ -7,7 +7,7 @@ function App() {
   const [colorIndex, setColorIndex] = useState(0)
 
   const changeBackgroundColor = () => {
-    // Calculate the next index and wrapp around to 0 when at the end
+    // Calculate the next index and wrap around to 0 when at the end
     setColorIndex((prevIndex) => (prevIndex + 1) % colors.length)
   }
 
